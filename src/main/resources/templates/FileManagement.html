@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>File Management</title>
+    <style>
+        /* Global Styles */
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f7f7f7;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            flex-direction: column;
+        }
+        .container {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 800px;
+            margin: 20px;
+        }
+
+        h1, h2 {
+            text-align: center;
+            color: #333;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        input[type="text"], textarea, input[type="number"] {
+            padding: 12px;
+            font-size: 16px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            width: 100%;
+            max-width: 600px;
+        }
+
+        /* Button styles */
+        button {
+            padding: 12px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-right: 10px; /* Adds spacing between buttons */
+            margin-bottom: 10px; /* Adds space below each button */
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .version-container {
+            display: flex;
+            flex-direction: column; /* Stack buttons vertically */
+            gap: 10px; /* Adds space between the version and its buttons */
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Specific button color styles */
+        .version-button {
+            background-color: #28a745;
+        }
+
+        .version-button:hover {
+            background-color: #218838;
+        }
+
+        .download-button {
+            background-color: #007BFF;
+        }
+
+        .download-button:hover {
+            background-color: #007BFF;
+        }
+
+        .delete-button {
+            background-color: #dc3545;
+        }
+
+        .delete-button:hover {
+            background-color: #c82333;
+        }
+
+        /* Modal and version list styling */
+        #versionList {
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px; /* Adds space between version containers */
+        }
+        .form-section {
+            margin-bottom: 30px;
+        }
+
+        .form-section label {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .success, .error {
+            font-weight: bold;
+            margin-top: 10px;
+            text-align: center;
+        }
+
+        .error {
+            color: #f44336;
+        }
+
+        .success {
+            color: #4CAF50;
+        }
+
+        table {
+            width: 100%;
+            margin-top: 20px;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f4f4f4;
+        }
+
+        pre {
+            background-color: #f4f4f4;
+            padding: 20px;
+            border-radius: 5px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-family: 'Courier New', Courier, monospace;
+        }
+        /* JSON Data Card */
+        .json-data-card {
+            background-color: #f4f4f4;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .json-data-card p {
+            font-size: 18px;
+            margin: 10px 0;
+        }
+
+        .json-preview {
+            margin-top: 20px;
+        }
+
+        .json-preview h3 {
+            font-size: 16px;
+            color: #333;
+        }
+
+        pre {
+            background-color: #eee;
+            padding: 15px;
+            border-radius: 5px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-size: 14px;
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        /* Scrollable Table */
+        .scrollable-table-container {
+            max-height: 300px;  /* Set the max height of the container */
+            overflow-y: scroll; /* Enable vertical scrolling */
+            margin-top: 10px;
+        }
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.4);
+            padding-top: 60px;
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 600px;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>File Management System</h1>
+    <div id="invalidExtensionError" class="error" style="display: none;">
+        <p>Please provide a valid file (with valid extension).</p>
+    </div>
+    <h2>Text File Content</h2>
+    <pre id="textContent" th:text="${content}"></pre>
+
+    <h3 style="text-align: center">JSON Data</h3>
+    <pre id="jsonContent" th:text="${dataList}"></pre>
+
+    <div th:if="${csvData != null and !csvData.isEmpty()}">
+        <h2>CSV Data</h2>
+        <div class="scrollable-table-container">
+            <table>
+                <thead>
+                <tr>
+                    <!-- Loop through the first row (header) of the CSV data to create table headers -->
+                    <th th:each="col : ${csvData[0]}" th:text="${col}"></th>
+                </tr>
+                </thead>
+                <tbody>
+                <!-- Loop through each row of CSV data starting from the second row -->
+                <tr th:each="row, iterStat : ${csvData}" th:if="${iterStat.index > 0}">
+                    <td th:each="col : ${row}" th:text="${col}"></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+<!--    <div th:if="${dataList != null}">-->
+<!--        <h3 style="text-align: center">JSON Data</h3>-->
+<!--        <pre id="jsonContent" th:text="${dataList}"></pre>-->
+<!--    </div>-->
+
+<!--    <div th:if="${content != null}">-->
+<!--        <h2>Text File Content</h2>-->
+<!--        <pre id="textContent" th:text="${content}"></pre>-->
+<!--    </div>-->
+
+    <!-- Error or Content Display -->
+    <div th:if="${error}" class="error" style="display: none;">
+        <p th:text="${error}"></p>
+    </div>
+
+    <div th:if="${message}" class="success">
+        <p th:text="${message}"></p>
+    </div>
+
+    <h2>File Operations</h2>
+
+    <!-- Read Text File -->
+    <div class="form-section">
+        <h3>Read Text File</h3>
+        <form th:action="@{/file/read-text}" method="get">
+            <label for="textfilePath">Enter file path:</label>
+            <input type="text" id="textfilePath" name="filePath" placeholder="e.g., /path/to/file.txt" required />
+            <button type="submit"  onclick="showVersions(event, 'text')">Read Text File</button>
+        </form>
+    </div>
+
+    <!-- Write Text File -->
+    <div class="form-section">
+        <h3>Write Text File</h3>
+        <form th:action="@{/file/write-text}" method="post">
+            <label for="writeFilePath">Enter file path:</label>
+            <input type="text" id="writeFilePath" name="filePath" placeholder="e.g., /path/to/file.txt" required />
+            <textarea name="content" rows="4" placeholder="Enter file content"></textarea>
+            <button type="submit">Write to File</button>
+        </form>
+    </div>
+
+    <!-- Read CSV File -->
+    <div class="form-section">
+        <h3>Read CSV File</h3>
+        <form th:action="@{/file/read-csv}" method="get" onsubmit="return validateCSVFile()">
+            <label for="csvfilePath">Enter CSV file path:</label>
+            <input type="text" id="csvfilePath" name="filePath" placeholder="e.g., /path/to/file.csv" required />
+            <button type="submit">Read CSV</button>
+        </form>
+    </div>
+
+    <!-- Write CSV File -->
+    <div class="form-section">
+        <h3>Write CSV File</h3>
+        <form th:action="@{/file/write-csv}" method="post" onsubmit="return validateCSVFile()">
+            <label for="csvWriteFilePath">Enter CSV file path:</label>
+            <input type="text" id="csvWriteFilePath" name="filePath" placeholder="e.g., /path/to/file.csv" required />
+            <textarea name="csvData" rows="6" placeholder="Enter CSV data (one row per line, comma-separated)"></textarea>
+            <button type="submit">Write to CSV</button>
+        </form>
+    </div>
+
+    <!-- Read JSON File -->
+    <div class="form-section">
+        <h3>Read JSON File</h3>
+        <form th:action="@{/file/read-json}" method="get" onsubmit="return validateJSONFile()">
+            <label for="jsonfilePath">Enter JSON file path:</label>
+            <input type="text" id="jsonfilePath" name="filePath" placeholder="e.g., /path/to/file.json" required />
+            <button type="submit" onclick="showVersions(event, 'json')">Read JSON</button>
+        </form>
+    </div>
+
+    <!-- Write JSON File -->
+    <div class="form-section">
+        <h3>Write JSON File</h3>
+        <form th:action="@{/file/write-json}" method="post">
+            <label for="jsonWriteFilePath">Enter JSON file path:</label>
+            <input type="text" id="jsonWriteFilePath" name="filePath" placeholder="e.g., /path/to/file.json" required />
+            <textarea name="jsonData" rows="6" placeholder="[{'field1' : 'value','field2' : 'value'}]"></textarea>
+            <button type="submit">Write to JSON</button>
+        </form>
+    </div>
+    <div id="versionModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h2>Available Versions</h2>
+            <div id="versionList"></div>
+        </div>
+    </div>
+</div>
+<script>
+    function validateCSVFile() {
+        const filePath = document.getElementById('csvfilePath').value;
+        const fileExtension = filePath.split('.').pop().toLowerCase();
+
+        // Check if the file extension is '.csv'
+        if (fileExtension !== 'csv') {
+            // Show the error message
+            document.getElementById('invalidExtensionError').style.display = 'block';
+            // Prevent form submission
+            return false;
+        } else {
+            // Hide the error message if valid extension
+            document.getElementById('invalidExtensionError').style.display = 'none';
+            return true;
+        }
+    }
+    function validateJSONFile() {
+        const filePath = document.getElementById('jsonfilePath').value;
+        const fileExtension = filePath.split('.').pop().toLowerCase();
+
+        // Check if the file extension is '.csv'
+        if (fileExtension !== 'json') {
+            // Show the error message
+            document.getElementById('invalidExtensionError').style.display = 'block';
+            // Prevent form submission
+            return false;
+        } else {
+            // Hide the error message if valid extension
+            document.getElementById('invalidExtensionError').style.display = 'none';
+            return true;
+        }
+    }
+    function showVersions(event, fileType) {
+        event.preventDefault();
+        var filePath = document.getElementById(fileType + 'filePath').value;
+        var fileName = filePath.split('/').pop().split('.')[0];
+
+        if (fileType === 'json') {
+            fileName = fileName + "." + "json";
+        } else if (fileType === 'text') {
+            fileName = fileName + "." + "txt";
+        }
+
+        var url = `http://localhost:8080/file/versions?filePath=${encodeURIComponent(fileName)}`;
+        fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                let versionListDiv = document.getElementById("versionList");
+                versionListDiv.innerHTML = '';  // Clear previous list
+                let modal = document.getElementById('versionModal');
+
+                if (data && data.length > 0) {
+                    data.forEach((version, index) => {
+                        let versionButton = document.createElement("button");
+                        versionButton.textContent = version;
+                        versionButton.className = 'version-button'; // Add specific class for styling
+                        versionButton.onclick = function () {
+                            fetchVersionContent(fileName, version, fileType);
+                        };
+
+                        let downloadButton = document.createElement("button");
+                        downloadButton.textContent = "Download";
+                        downloadButton.className = 'download-button'; // Add specific class for styling
+                        downloadButton.onclick = function () {
+                            downloadVersion(fileName, version, fileType);
+                        };
+
+                        let deleteButton = document.createElement("button");
+                        deleteButton.textContent = "Delete";
+                        deleteButton.className = 'delete-button'; // Add specific class for styling
+                        deleteButton.onclick = function () {
+                            deleteVersion(fileName, version);
+                        };
+
+                        // Create a container div for each version set (version + buttons)
+                        let versionContainer = document.createElement("div");
+                        versionContainer.className = 'version-container';
+                        versionContainer.style.marginBottom = '20px'; // Adds space between versions
+
+                        versionContainer.appendChild(versionButton);
+                        versionContainer.appendChild(downloadButton);
+                        versionContainer.appendChild(deleteButton);
+
+                        // Add the version container to the list
+                        versionListDiv.appendChild(versionContainer);
+                    });
+                } else {
+                    versionListDiv.innerHTML = "No versions available. Showing the current file content...";
+                    fetchFileContent(filePath, fileType);
+                }
+
+                modal.style.display = 'block';
+
+                window.onclick = function(event) {
+                    if (event.target === modal) {
+                        modal.style.display = 'none';
+                    }
+                };
+            })
+            .catch(error => console.error('Error fetching versions:', error));
+    }
+
+
+
+    function fetchFileContent(fileName, fileType) {
+        console.log("Fetching current file content...");
+
+        let url;
+        if (fileType === 'text') {
+            url = `/file/read-text?filePath=${encodeURIComponent(fileName)}`;
+        } else if (fileType === 'json') {
+            url = `/file/read-json?filePath=${encodeURIComponent(fileName)}`;
+        } else {
+            console.error("Unsupported file type:", fileType);
+            return;
+        }
+
+        fetch(url)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                // Return content as text or JSON depending on file type
+                return fileType === 'json' ? response.json() : response.text();
+            })
+            .then(content => {
+                displayFileContent(content, fileType);  // Directly pass the content (no need to parse JSON here)
+            })
+            .catch(error => {
+                console.error('Error fetching or processing file content:', error);
+            });
+    }
+
+
+
+    function displayFileContent(content, fileType) {
+        let contentArea;
+
+        if (fileType === 'json') {
+            try {
+                // Check if content is already a parsed object or a stringified JSON
+                if (typeof content === 'string') {
+                    console.log("Content is a stringified JSON, parsing it...");
+                    content = JSON.parse(content);  // Parse the stringified JSON
+                }
+
+                console.log("Displaying JSON content...");
+                contentArea = document.querySelector('#jsonContent');
+                if (contentArea) {
+                    contentArea.textContent = JSON.stringify(content, null, 2);  // Pretty print JSON
+                } else {
+                    console.error('Content area for JSON not found');
+                }
+            } catch (error) {
+                console.error('Error displaying JSON data:', error);
+            }
+
+        } else if (fileType === 'text') {
+            console.log("Processing text content...");
+            contentArea = document.querySelector('#textContent');
+            if (contentArea) {
+                contentArea.textContent = content;  // Directly display the text content
+            } else {
+                console.error('Content area for Text not found');
+            }
+        } else {
+            console.warn("Unsupported file type:", fileType);
+        }
+
+        closeModal();  // Close modal after displaying content
+    }
+
+
+    function downloadVersion(fileName, version, fileType) {
+        const url = `/file/download-version?fileName=${encodeURIComponent(fileName)}&version=${encodeURIComponent(version)}&fileType=${fileType}`;
+        fetch(url)
+            .then(response => response.blob())
+            .then(blob => {
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = `${version}`;
+                link.click();
+            })
+            .catch(error => console.error('Error downloading version:', error));
+    }
+
+    function deleteVersion(fileName, version) {
+        const confirmation = confirm(`Are you sure you want to delete version ${version} of ${fileName}?`);
+        if (confirmation) {
+            fetch(`/file/delete-version?version=${encodeURIComponent(version)}`, {
+                method: 'DELETE',
+            })
+                // .then(response => response.json())
+                .then(data => {
+                    alert('Version deleted successfully');
+                    closeModal();
+                })
+                .catch(error => console.error('Error deleting version:', error));
+        }
+    }
+    function closeModal() {
+        document.getElementById('versionModal').style.display = 'none';
+    }
+
+
+
+    function fetchVersionContent(fileName, version, fileType) {
+        console.log("Fetching version content...");
+        console.log("File Name:", fileName);
+        console.log("Version:", version);
+        console.log("File Type:", fileType);
+
+        fetch(`/file/read-version/${version}?fileType=${fileType}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                return response.text();  // We are receiving raw text content
+            })
+            .then(content => {
+                displayFileContent(content, fileType);  // Display the version content based on file type
+            })
+            .catch(error => {
+                console.error('Error fetching or processing version content:', error);
+            });
+    }
+</script>
+
+</body>
+</html>

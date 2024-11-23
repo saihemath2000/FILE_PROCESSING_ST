@@ -1,0 +1,94 @@
+Definitions and DU Paths in FileManagerService
+1. Method: readTextFile
+Definitions (defs):
+content (Line 11): Initialized to collect file content.
+reader (Line 17): BufferedReader to read the file.
+line (Line 18): Used to store each line of the file.
+DU Paths:
+DU Path 1: A valid .txt file is provided, and content is read successfully.
+DU Path 2: The provided file does not have a .txt extension, triggering the if condition.
+DU Path 3: The file cannot be read (e.g., does not exist), triggering the catch block.
+2. Method: writeTextFile
+Definitions (defs):
+writer (Line 33): BufferedWriter to write content to the file.
+DU Paths:
+DU Path 1: File exists and is written to successfully in append mode.
+DU Path 2: An exception occurs while writing to the file (not explicitly handled here but relevant for robustness).
+3. Method: readCSV
+Definitions (defs):
+data (Line 40): Stores the rows of the CSV file as lists of strings.
+line (Line 43): Holds each line read from the file.
+columns (Line 45): Holds the split columns for a single row.
+DU Paths:
+DU Path 1: A valid CSV file is provided, and all rows are read successfully.
+DU Path 2: The file cannot be read due to an exception (e.g., file not found).
+4. Method: writeCSV
+Definitions (defs):
+writer (Line 55): FileWriter to append rows to a CSV file.
+row (Line 57): Each row of the provided data.
+DU Paths:
+DU Path 1: File exists, and rows are appended successfully.
+DU Path 2: An exception occurs while writing (not explicitly handled but relevant).
+5. Method: readJsonFile
+Definitions (defs):
+objectMapper (Line 63): Used to deserialize the JSON file.
+DU Paths:
+DU Path 1: A valid JSON file is read successfully and deserialized into the expected class.
+DU Path 2: File deserialization fails due to invalid JSON format or other errors, triggering the catch block.
+6. Method: writeJsonFile
+Definitions (defs):
+file (Line 75): Refers to the file object for the provided path.
+dataList (Line 78): Stores the list of MyData objects to be written.
+DU Paths:
+DU Path 1: File exists and is successfully updated with new data.
+DU Path 2: File does not exist, so a new one is created and written.
+DU Path 3: An exception occurs while reading/writing the file (e.g., invalid file path).
+Explanation of Test Cases
+Test Case 1: testReadTextFile_ValidFile
+DU Path Tested: DU Path 1 of readTextFile
+Explanation:
+Creates a valid .txt file.
+Writes some test content to the file.
+Reads the file using readTextFile.
+Validates that the read content matches the written content.
+Purpose: To ensure the method correctly handles valid .txt files.
+Test Case 2: testReadTextFile_InvalidExtension
+DU Path Tested: DU Path 2 of readTextFile
+Explanation:
+Provides a file with an invalid extension (e.g., .csv).
+Expects the method to return an error message indicating invalid file type.
+Purpose: To verify that the method rejects non-text files.
+Test Case 3: testReadTextFile_FileNotFound
+DU Path Tested: DU Path 3 of readTextFile
+Explanation:
+Provides a file path for a non-existent file.
+Expects the method to return an error message indicating a reading failure.
+Purpose: To ensure proper handling of file-not-found errors.
+Test Case 4: testWriteTextFile_AppendContent
+DU Path Tested: DU Path 1 of writeTextFile
+Explanation:
+Creates a valid text file and writes initial content.
+Appends additional content to the file using writeTextFile.
+Validates that the appended content is present.
+Purpose: To verify the correct functionality of the append mode.
+Test Case 5: testReadCSV_ValidFile
+DU Path Tested: DU Path 1 of readCSV
+Explanation:
+Creates a valid CSV file with headers and one data row.
+Reads the file using readCSV.
+Validates that the returned data matches the file content.
+Purpose: To ensure the method correctly handles valid CSV files.
+Test Case 6: testWriteJsonFile_ValidData
+DU Path Tested: DU Path 1 of writeJsonFile
+Explanation:
+Prepares a MyData object with sample data.
+Writes the object to a JSON file.
+Validates that the file exists after writing.
+Purpose: To verify successful writing of JSON data, especially appending to existing data.
+How These Test Cases Cover DU Paths
+readTextFile: Covers all three DU paths by testing valid files, invalid extensions, and non-existent files.
+writeTextFile: Covers the primary DU path (successful writing) but could be extended to test exception handling.
+readCSV: Covers valid file reading and edge cases (e.g., empty files or missing headers can be added as extensions).
+writeCSV: Focuses on the DU path for successful writing but could be extended for exception handling.
+readJsonFile: Could be extended to test invalid JSON formats or file-not-found scenarios.
+writeJsonFile: Covers DU paths for appending to existing files and writing new files.

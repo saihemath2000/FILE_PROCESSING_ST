@@ -1,0 +1,27 @@
+[ {
+  "name" : "hemanth",
+  "age" : 23,
+  "gaze" : 23
+}, {
+  "name" : "kumar",
+  "age" : 23,
+  "gaze" : 45
+}, {
+  "name" : "babs",
+  "age" : 11,
+  "gaze" : 34
+}, {
+  "name" : "som",
+  "age" : 23,
+  "gaze" : 100
+}, {
+  "random" : "ert",
+  "gaze" : 100
+}, {
+  "company" : "SDD",
+  "Sports" : "Null",
+  "Horoscope" : "Cancer"
+}, {
+  "name" : "Hemanth",
+  "Nickname" : "Sai"
+}]

@@ -1,0 +1,13 @@
+@startuml
+start
+:Input filePath;
+if (filePath ends with ".txt"?) then (yes)
+    :Open file for reading;
+    :Read file content line by line;
+    :Append content to result;
+else (no)
+    :Return "Invalid file type";
+endif
+:Return result;
+stop
+@enduml
