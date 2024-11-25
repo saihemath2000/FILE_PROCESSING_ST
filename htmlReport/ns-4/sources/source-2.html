@@ -1,0 +1,444 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > FileManagerService</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">com.fileprocessing.demo.Service</a>
+</div>
+
+<h1>Coverage Summary for Class: FileManagerService (com.fileprocessing.demo.Service)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">FileManagerService</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (16/16)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    67.2%
+  </span>
+  <span class="absValue">
+    (43/64)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    76%
+  </span>
+  <span class="absValue">
+    (95/125)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">FileManagerService$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">FileManagerService$2</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (18/18)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    67.2%
+  </span>
+  <span class="absValue">
+    (43/64)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    76.4%
+  </span>
+  <span class="absValue">
+    (97/127)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package com.fileprocessing.demo.Service;
+&nbsp;import com.fasterxml.jackson.core.type.TypeReference;
+&nbsp;import com.fasterxml.jackson.databind.ObjectMapper;
+&nbsp;import org.springframework.stereotype.Service;
+&nbsp;
+&nbsp;import java.io.*;
+&nbsp;import java.nio.file.Files;
+&nbsp;import java.nio.file.Path;
+&nbsp;import java.nio.file.Paths;
+&nbsp;import java.util.*;
+&nbsp;import java.util.regex.Pattern;
+&nbsp;
+&nbsp;@Service
+<b class="fc">&nbsp;public class FileManagerService {</b>
+<b class="fc">&nbsp;    private static final String[] ALLOWED_EXTENSIONS = {&quot;txt&quot;, &quot;json&quot;, &quot;csv&quot;};</b>
+&nbsp;    private static final String FILE_NAME_PATTERN = &quot;^[a-zA-Z0-9_-]+(\\.[a-zA-Z0-9_-]+)?$&quot;;
+&nbsp;    private static final String VERSION_DIR =&quot;versions/&quot;;
+<b class="fc">&nbsp;    private final ObjectMapper objectMapper = new ObjectMapper();</b>
+<b class="fc">&nbsp;    public final EnhancedFileManagerService enhancedFileManagerService = new EnhancedFileManagerService();</b>
+&nbsp;
+&nbsp;    // Read text file
+&nbsp;    public String readTextFile(String filePath) {
+<b class="fc">&nbsp;        StringBuilder content = new StringBuilder();</b>
+&nbsp;
+&nbsp;        // Check if the file has a .txt extension
+<b class="fc">&nbsp;        if (!filePath.toLowerCase().endsWith(&quot;.txt&quot;)) {</b>
+<b class="fc">&nbsp;            return &quot;Invalid file type. Only .txt files are allowed.&quot;;</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {</b>
+&nbsp;            String line;
+<b class="fc">&nbsp;            while ((line = reader.readLine()) != null) {</b>
+<b class="fc">&nbsp;                content.append(line).append(&quot;\n&quot;);</b>
+&nbsp;            }
+<b class="fc">&nbsp;        } catch (IOException e) {</b>
+<b class="nc">&nbsp;            e.printStackTrace();</b>
+<b class="nc">&nbsp;            return &quot;Error reading file.&quot;;</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        return content.toString();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    // Write to text file with versioning
+&nbsp;    public void writeTextFile(String filePath, String content) throws IOException {
+&nbsp;        // Create a version after writing
+<b class="fc">&nbsp;        enhancedFileManagerService.addContentAndCreateVersionText(filePath,content);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    // Read CSV file
+&nbsp;    public List&lt;List&lt;String&gt;&gt; readCSV(String filePath) throws IOException {
+<b class="pc">&nbsp;        if (!filePath.endsWith(&quot;.csv&quot;)) {</b>
+<b class="nc">&nbsp;            throw new IllegalArgumentException(&quot;Invalid file type. Only .csv files are allowed.&quot;);</b>
+&nbsp;        }
+<b class="fc">&nbsp;        List&lt;List&lt;String&gt;&gt; data = new ArrayList&lt;&gt;();</b>
+<b class="fc">&nbsp;        try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {</b>
+&nbsp;            String line;
+<b class="fc">&nbsp;            while ((line = br.readLine()) != null) {</b>
+<b class="fc">&nbsp;                String[] columns = line.split(&quot;,&quot;);</b>
+<b class="fc">&nbsp;                List&lt;String&gt; row = new ArrayList&lt;&gt;();</b>
+<b class="fc">&nbsp;                for (String column : columns) {</b>
+<b class="fc">&nbsp;                    row.add(column.trim());</b>
+&nbsp;                }
+<b class="fc">&nbsp;                data.add(row);</b>
+&nbsp;            }
+<b class="fc">&nbsp;        }catch (FileNotFoundException e) {</b>
+<b class="nc">&nbsp;            System.err.println(&quot;File not found: &quot; + filePath);</b>
+<b class="nc">&nbsp;            return Collections.singletonList(Collections.singletonList(&quot;File Not Found&quot;));</b>
+<b class="nc">&nbsp;        } catch (IOException e) {</b>
+<b class="nc">&nbsp;            e.printStackTrace();</b>
+&nbsp;        }
+<b class="fc">&nbsp;        return data;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void writeCSV(String filePath, List&lt;List&lt;String&gt;&gt; data) throws IOException {
+&nbsp;        // Read the header of the CSV file to determine the number of columns
+<b class="fc">&nbsp;        List&lt;String&gt; header = null;</b>
+<b class="fc">&nbsp;        File file = new File(filePath);</b>
+&nbsp;
+<b class="pc">&nbsp;        if (file.exists()) {</b>
+<b class="fc">&nbsp;            try (BufferedReader reader = new BufferedReader(new FileReader(file))) {</b>
+<b class="fc">&nbsp;                String line = reader.readLine(); // Read the header line</b>
+<b class="pc">&nbsp;                if (line != null) {</b>
+<b class="fc">&nbsp;                    header = Arrays.asList(line.split(&quot;,&quot;));</b>
+&nbsp;                }
+<b class="fc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;
+<b class="pc">&nbsp;        if (header == null || header.isEmpty()) {</b>
+<b class="nc">&nbsp;            throw new IllegalArgumentException(&quot;CSV file must have a header row.&quot;);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        // Check if the data being added has the correct number of columns
+<b class="fc">&nbsp;        for (List&lt;String&gt; row : data) {</b>
+<b class="fc">&nbsp;            if (row.size() &gt; header.size()) {</b>
+<b class="fc">&nbsp;                throw new IllegalArgumentException(&quot;Row has more columns than the header. Please provide data with &quot; + header.size() + &quot; columns.&quot;);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        // Write the data to the CSV file
+<b class="fc">&nbsp;        try (FileWriter writer = new FileWriter(filePath, true)) { // &#39;true&#39; for append mode</b>
+<b class="fc">&nbsp;            for (List&lt;String&gt; row : data) {</b>
+&nbsp;                // Ensure that the row has the correct number of columns by padding with empty strings if needed
+<b class="pc">&nbsp;                while (row.size() &lt; header.size()) {</b>
+<b class="nc">&nbsp;                    row.add(&quot;&quot;); // Add empty values for missing columns</b>
+&nbsp;                }
+<b class="fc">&nbsp;                writer.write(String.join(&quot;,&quot;, row)); // Convert list to comma-separated string</b>
+<b class="fc">&nbsp;                writer.write(&quot;\n&quot;); // Add a new line for each row</b>
+&nbsp;            }
+<b class="fc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;
+&nbsp;    // Read JSON file into a List of Maps
+&nbsp;    public List&lt;Map&lt;String, Object&gt;&gt; readJsonFile(String filePath) {
+&nbsp;        try {
+<b class="fc">&nbsp;            return objectMapper.readValue(new File(filePath), new TypeReference&lt;List&lt;Map&lt;String, Object&gt;&gt;&gt;() {});</b>
+<b class="nc">&nbsp;        } catch (IOException e) {</b>
+<b class="nc">&nbsp;            e.printStackTrace();</b>
+&nbsp;        }
+<b class="nc">&nbsp;        return null;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    // Write JSON file with versioning
+&nbsp;    public void writeJsonFile(String filePath, List&lt;Map&lt;String, Object&gt;&gt; data) throws IOException {
+&nbsp;
+&nbsp;
+<b class="fc">&nbsp;        File file = new File(filePath);</b>
+<b class="fc">&nbsp;        List&lt;Map&lt;String, Object&gt;&gt; dataList = new ArrayList&lt;&gt;();</b>
+&nbsp;
+<b class="pc">&nbsp;        if (file.exists()) {</b>
+&nbsp;            // Read the existing data from the file
+&nbsp;            try {
+<b class="fc">&nbsp;                dataList = objectMapper.readValue(file, new TypeReference&lt;List&lt;Map&lt;String, Object&gt;&gt;&gt;() {});</b>
+<b class="nc">&nbsp;            } catch (IOException e) {</b>
+&nbsp;                // Handle error (file may not be in list format)
+<b class="nc">&nbsp;                Map&lt;String, Object&gt; existingData = objectMapper.readValue(file, Map.class);</b>
+<b class="nc">&nbsp;                dataList.add(existingData); // Add the existing object to the list</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        // Add the new data to the list
+<b class="fc">&nbsp;        dataList.addAll(data);</b>
+<b class="fc">&nbsp;        enhancedFileManagerService.saveFileVersionJson(filePath,dataList);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    // List all available versions for a file
+&nbsp;    public List&lt;String&gt; listVersions(String filePath) {
+<b class="fc">&nbsp;        return enhancedFileManagerService.listFileVersions(filePath);</b>
+&nbsp;    }
+&nbsp;    public String readVersionContent(String version) {
+&nbsp;        // Ensure VERSION_DIR is correctly configured
+<b class="fc">&nbsp;        System.out.println(&quot;VERSION_DIR: &quot; + VERSION_DIR);</b>
+<b class="fc">&nbsp;        String filePath = VERSION_DIR + &quot;/&quot; + version;  // Example path format</b>
+<b class="fc">&nbsp;        System.out.println(&quot;Requested File Path: &quot; + filePath);</b>
+&nbsp;
+<b class="fc">&nbsp;        File versionFile = new File(filePath);</b>
+&nbsp;
+<b class="pc">&nbsp;        if (versionFile.exists()) {</b>
+&nbsp;            try {
+&nbsp;                // Log the content being read
+<b class="fc">&nbsp;                String content = new String(Files.readAllBytes(versionFile.toPath()));</b>
+<b class="fc">&nbsp;                System.out.println(&quot;File Content: &quot; + content);</b>
+<b class="fc">&nbsp;                return content;</b>
+<b class="nc">&nbsp;            } catch (IOException e) {</b>
+<b class="nc">&nbsp;                System.err.println(&quot;Error reading the file: &quot; + e.getMessage());</b>
+<b class="nc">&nbsp;                throw new RuntimeException(&quot;Error reading the file: &quot; + e.getMessage());</b>
+&nbsp;            }
+&nbsp;        } else {
+<b class="nc">&nbsp;            System.err.println(&quot;Versioned file not found: &quot; + filePath);</b>
+<b class="nc">&nbsp;            throw new RuntimeException(&quot;Versioned file not found&quot;);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;    public byte[] downloadFileVersion(String version) throws IOException {
+&nbsp;
+<b class="fc">&nbsp;        System.out.println(version);</b>
+<b class="fc">&nbsp;        Path filePath = Paths.get(VERSION_DIR,version);</b>
+&nbsp;
+<b class="pc">&nbsp;        if (!Files.exists(filePath)) {</b>
+<b class="nc">&nbsp;            throw new IOException(&quot;File version not found: &quot; + version);</b>
+&nbsp;        }
+<b class="fc">&nbsp;        return Files.readAllBytes(filePath);  // Return the content of the file as bytes</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    // Method to delete a file version
+&nbsp;    public static boolean deleteFileVersion(String version) throws IOException {
+&nbsp;        // Construct the versioned file path
+<b class="fc">&nbsp;        Path filePath = Paths.get(VERSION_DIR,version);  // Assuming the files are .txt files, modify as necessary</b>
+&nbsp;
+<b class="pc">&nbsp;        if (!Files.exists(filePath)) {</b>
+<b class="nc">&nbsp;            return false;  // Version not found, nothing to delete</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        // Delete the version file
+<b class="fc">&nbsp;        Files.delete(filePath);</b>
+<b class="fc">&nbsp;        return true;</b>
+&nbsp;    }
+&nbsp;    public String renameFile(String filePath, String newFileName) {
+<b class="fc">&nbsp;        File originalFile = new File(filePath);</b>
+&nbsp;
+&nbsp;        // Check if the original file exists
+<b class="fc">&nbsp;        if (!originalFile.exists()) {</b>
+<b class="fc">&nbsp;            return &quot;Original file not found.&quot;;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        // Extract the original file extension
+<b class="fc">&nbsp;        String originalExtension = getFileExtension(filePath);</b>
+&nbsp;
+&nbsp;        // Check for invalid file extension for the original file
+<b class="pc">&nbsp;        if (!isValidExtension(originalExtension)) {</b>
+<b class="nc">&nbsp;            return &quot;Invalid original file extension. Only .txt, .json, .csv are allowed.&quot;;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        // Check if the new file name is valid (alphanumeric, dash, underscore)
+<b class="pc">&nbsp;        if (newFileName == null || newFileName.trim().isEmpty() || !newFileName.matches(FILE_NAME_PATTERN)) {</b>
+<b class="fc">&nbsp;            return &quot;Invalid file name. Name cannot be empty and should contain only alphanumeric characters, dashes, and underscores.&quot;;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        // Check that the new file name has the same extension as the original file
+<b class="fc">&nbsp;        String newExtension = getFileExtension(newFileName);</b>
+<b class="pc">&nbsp;        if (newExtension == null || !newExtension.equals(originalExtension)) {</b>
+<b class="fc">&nbsp;            System.out.print(newExtension);</b>
+<b class="fc">&nbsp;            return &quot;The new file must have the same extension as the original file (.&quot; + originalExtension + &quot;).Not Invalid&quot;;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        // Check for name conflict (if a file already exists with the new name)
+<b class="fc">&nbsp;        File newFile = new File(originalFile.getParent(), newFileName);</b>
+<b class="fc">&nbsp;        if (newFile.exists()) {</b>
+<b class="fc">&nbsp;            return &quot;A file with the new name already exists.&quot;;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        // Try renaming the original file
+<b class="fc">&nbsp;        boolean isRenamed = originalFile.renameTo(newFile);</b>
+<b class="pc">&nbsp;        if (!isRenamed) {</b>
+<b class="nc">&nbsp;            return &quot;Failed to rename the original file.&quot;;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        // Rename corresponding version files
+<b class="fc">&nbsp;        File versionsDir = new File(&quot;versions/&quot;);</b>
+<b class="fc">&nbsp;        String fileName = extractFileNameFromPath(filePath);</b>
+<b class="fc">&nbsp;        String regex = &quot;^&quot; + Pattern.quote(fileName) + &quot;_v[0-9]+$&quot;;  // Match version files</b>
+&nbsp;
+&nbsp;        // List the version files
+<b class="fc">&nbsp;        File[] files = versionsDir.listFiles((dir, name) -&gt; name.matches(regex));</b>
+<b class="pc">&nbsp;        if (files != null) {</b>
+<b class="pc">&nbsp;            for (File versionFile : files) {</b>
+<b class="nc">&nbsp;                String newVersionFileName = versionFile.getName().replace(originalFile.getName(), newFileName);</b>
+<b class="nc">&nbsp;                File newVersionFile = new File(versionsDir, newVersionFileName);</b>
+<b class="nc">&nbsp;                boolean versionRenamed = versionFile.renameTo(newVersionFile);</b>
+<b class="nc">&nbsp;                if (!versionRenamed) {</b>
+<b class="nc">&nbsp;                    return &quot;Failed to rename version file: &quot; + versionFile.getName();</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        return &quot;File and versions renamed successfully.&quot;;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean isValidExtension(String extension) {
+<b class="pc">&nbsp;        for (String ext : ALLOWED_EXTENSIONS) {</b>
+<b class="fc">&nbsp;            if (ext.equalsIgnoreCase(extension)) {</b>
+<b class="fc">&nbsp;                return true;</b>
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;        return false;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public String getFileExtension(String filePath) {
+<b class="fc">&nbsp;        int lastDotIndex = filePath.lastIndexOf(&#39;.&#39;);</b>
+<b class="pc">&nbsp;        return (lastDotIndex &gt; 0) ? filePath.substring(lastDotIndex + 1).toLowerCase() : &quot;&quot;;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private String extractFileNameFromPath(String filePath) {
+<b class="fc">&nbsp;        return Paths.get(filePath).getFileName().toString();</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-11-25 10:52</div>
+</div>
+</body>
+</html>

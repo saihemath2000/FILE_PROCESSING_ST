@@ -1,0 +1,30 @@
+@startuml
+start
+:file = new File(filePath);
+:dataList = new ArrayList<>();
+if (file.exists()) then (yes)
+  :Read existing data from file;
+  if ("Read as List successful?") then (yes)
+    :dataList = objectMapper.readValue(file, List<Map<String, Object>>);
+  else (no)
+    :existingData = objectMapper.readValue(file, Map);
+    :dataList.add(existingData);
+  endif
+else (no)
+  :File does not exist, proceed with empty dataList;
+endif
+
+:Add new data to dataList;
+:enhancedFileManagerService.saveFileVersionJson(filePath, dataList);
+
+:file = new File(filePath);
+if (!file.exists()) then (yes)
+  :Throw new FileNotFoundException(filePath);
+else (no)
+  :versionedFileName = VERSION_DIR + file.getName() + "_v" + System.currentTimeMillis();
+  :versionedFile = new File(versionedFileName);
+  :objectMapper.writerWithDefaultPrettyPrinter().writeValue(versionedFile, dataList);
+endif
+
+stop
+@enduml

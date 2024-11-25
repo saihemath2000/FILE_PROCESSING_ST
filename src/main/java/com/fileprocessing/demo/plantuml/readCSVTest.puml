@@ -1,0 +1,28 @@
+@startuml
+start
+:filePath.endsWith(".csv")?;
+if (false) then (no)
+  :Throw new IllegalArgumentException("Invalid file type. Only .csv files are allowed.");
+else (yes)
+  :data = new ArrayList<>();
+  :Open BufferedReader with filePath;
+  if (FileNotFoundException?) then (yes)
+    :Return Collections.singletonList(Collections.singletonList("File Not Found"));
+  else (no)
+    while ((line = br.readLine()) != null) is (yes)
+      :columns = line.split(",");
+      :row = new ArrayList<>();
+      :Add each column (trimmed) to row;
+      :data.add(row);
+    endwhile
+    if (IOException?) then (yes)
+      :Log error;
+      :Return empty list;
+    else (no)
+      :Close BufferedReader;
+      :Return data;
+    endif
+  endif
+endif
+stop
+@enduml

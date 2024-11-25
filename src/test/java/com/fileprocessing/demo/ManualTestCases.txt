@@ -1,0 +1,216 @@
+Manual Test Case 1: Valid File with Content
+Test Case Description:
+Tests the function readTextFile with a valid file path "testFile.txt", containing some text content. The function should correctly read the content and return it.
+
+Input:
+
+File path: "testFile.txt"
+File content: "Hello, World!\nThis is a test file."
+Expected Behavior:
+
+The function should return the content of the file as a string.
+Expected Result:
+
+"Hello, World!\nThis is a test file.\n"
+_____________________________________________________________________________________________________________________________________________________________________________
+Manual Test Case 2: Invalid File Extension
+Test Case Description:
+Tests the function readTextFile with an invalid file extension (.csv). The function should return an error message indicating that only .txt files are allowed.
+
+Input:
+
+File path: "testFile.csv"
+Expected Behavior:
+
+The function should detect the invalid extension and return the appropriate error message.
+Expected Result:
+
+"Invalid file type. Only .txt files are allowed."
+_________________________________________________________________________________________________________________________________________________________________________________________
+Manual Test Case 3: File Not Found
+Test Case Description:
+Tests the function readTextFile with a non-existent file path. The function should return an error message indicating the file could not be read.
+
+Input:
+
+File path: "nonExistentFile.txt"
+Expected Behavior:
+
+The function should return a generic error message for missing files.
+Expected Result:
+
+"Error reading file."
+_____________________________________________________________________________________________________________________________________________________________________________________________
+Manual Test Case 4: Append to File
+Test Case Description:
+Tests the function writeTextFile with a valid file path "testWrite.txt" to append new content "Appended Content" to an existing file containing "Initial Content".
+
+Input:
+
+File path: "testWrite.txt"
+Initial file content: "Initial Content\n"
+New content to append: "Appended Content"
+Expected Behavior:
+
+The function should append the new content to the existing file.
+Expected Result:
+
+The file content should now include both the initial and appended content.
+_______________________________________________________________________________________________________________________________________________________________________________
+Manual Test Case 5: Valid CSV File
+Test Case Description:
+Tests the function readCSV with a valid CSV file "testFile.csv" containing a header row and a single data row. The function should parse the CSV and return the list of rows.
+
+Input:
+
+File path: "testFile.csv"
+File content: "name,age,city\nJohn,30,New York"
+Expected Behavior:
+
+The function should parse the CSV file and return a list of lists representing the rows.
+Expected Result:
+
+[ ["name", "age", "city"], ["John", "30", "New York"] ]
+__________________________________________________________________________________________________________________________________________________________________________________________
+Manual Test Case 6: File Does Not Exist (CSV)
+Test Case Description:
+Tests the function readCSV with a non-existent file path. The function should return a list containing a message "File Not Found".
+
+Input:
+
+File path: "/home/hemanth/Desktop/iiitb/ST/fileprocess_project/FILES/nonExistentFile.csv"
+Expected Behavior:
+
+The function should return a list indicating the file was not found.
+Expected Result:
+
+[["File Not Found"]]
+_________________________________________________________________________________________________________________________________________________________
+Manual Test Case 7: Write JSON File (Valid Data)
+Test Case Description:
+Tests the function writeJsonFile by writing a list of maps to a JSON file. It checks if the file is created successfully and contains the expected data.
+
+Input:
+
+File path: "testJson.json"
+Data: [{"name": "John", "age": 22}]
+Expected Behavior:
+
+The function should write the JSON data to the specified file and create it successfully.
+Expected Result:
+
+A valid JSON file is created containing {"name": "John", "age": 22}.
+_______________________________________________________________________________________________________________________________________________________________
+Manual Test Case 8: Read JSON File (Valid Data)
+Test Case Description:
+Tests the function readJsonFile by reading the JSON file created in the previous test. It checks if the function correctly reads and parses the file.
+
+Input:
+
+File path: "testReadJson.json"
+Expected Behavior:
+
+The function should return the parsed data as a list of maps.
+Expected Result:
+
+[{"name": "John", "age": 22}]
+______________________________________________________________________________________________________________________________________________________________
+Manual Test Case 9: Invalid File Extension for JSON
+Test Case Description:
+Tests the function readJsonFile with an invalid file extension (.txt). The function should return null because it only accepts JSON files.
+
+Input:
+
+File path: "testFile.txt"
+Expected Behavior:
+
+The function should return null when the file has an invalid extension.
+Expected Result:
+null
+______________________________________________________________________________________________________________________________________________________
+Manual Test Case 10: Invalid File Path for JSON
+Test Case Description:
+Tests the function readJsonFile with a non-existent file path. The function should return null indicating that the file was not found.
+
+Input:
+
+File path: "nonExistentFile.json"
+Expected Behavior:
+
+The function should return null since the file does not exist.
+Expected Result:
+
+null
+________________________________________________________________________________________________________________________________________________________________
+Manual Test Case 11: Invalid Extension for CSV
+Test Case Description:
+Tests the function readCSV with a .txt file extension. The function should throw an exception indicating that only .csv files are allowed.
+
+Input:
+
+File path: "/home/hemanth/Desktop/iiitb/ST/fileprocess_project/FILES/text_file.txt"
+Expected Behavior:
+
+The function should throw an IllegalArgumentException for the invalid file extension.
+Expected Result:
+
+The exception message should be "Invalid file type. Only .csv files are allowed."
+________________________________________________________________________________________________________________________________________________________________
+Manual Test Case 12: Write CSV File
+Test Case Description:
+Tests the function writeCSV by writing data to a CSV file. It checks if the data is correctly written to the specified file.
+
+Input:
+
+File path: "test.csv"
+Data: [["Col1", "Col2"], ["Data1", "Data2"]]
+Expected Behavior:
+
+The function should write the CSV data to the file.
+Expected Result:
+
+A CSV file is created with the contents "Col1,Col2\nData1,Data2".
+_________________________________________________________________________________________________________________________________________________________
+Manual Test Case 13: List Versions
+Test Case Description:
+Tests the function listVersions by returning a list of versions for a file. It checks if the versions are correctly retrieved.
+
+Input:
+
+File path: "test.txt"
+Versions: ["test_v1", "test_v2"]
+Expected Behavior:
+
+The function should return the list of versions for the specified file.
+Expected Result:
+
+["test_v1", "test_v2"]
+________________________________________________________________________________________________________________________________________________________________________
+Manual Test Case 14: Delete File Version
+Test Case Description:
+Tests the function deleteFileVersion by deleting a specific version of a file. It checks if the deletion is successful.
+
+Input:
+
+Version: "test_v1"
+Expected Behavior:
+
+The function should successfully delete the specified file version.
+Expected Result:
+
+true (indicating successful deletion)
+______________________________________________________________________________________________________________________________________________
+Manual Test Case 15: Download File Version
+Test Case Description:
+Tests the function downloadFileVersion by downloading a specific version of a file. It checks if the correct file content is returned.
+
+Input:
+
+Version: "test_v1"
+File path: /home/hemanth/Desktop/iiitb/ST/fileprocess_project/versions/test_v1
+Expected Behavior:
+
+The function should correctly download the file version and return the expected content.
+Expected Result:
+
+The returned content should match the expected mock data, "Mocked file content for download."

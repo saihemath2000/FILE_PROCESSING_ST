@@ -24,4 +24,16 @@
 }, {
   "name" : "Hemanth",
   "Nickname" : "Sai"
+}, {
+  "College" : "JNTU",
+  "Grade" : "A*"
+}, {
+  "Name" : "Sup",
+  "Age" : 23
+}, {
+  "Name" : "Sai",
+  "Bab" : "Ball"
+}, {
+  "Name" : "Hemanth",
+  "Sde" : 2
 }]

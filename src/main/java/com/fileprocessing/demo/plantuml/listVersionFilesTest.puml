@@ -1,0 +1,22 @@
+@startuml
+start
+:regex = "^" + Pattern.quote(originalFileName) + "_v[0-9]+$";
+:Print regex;
+:versionDir = new File(VERSION_DIR);
+:versionFiles = new ArrayList<>();
+:files = versionDir.listFiles((dir, name) -> name.matches(regex));
+
+if (files != null) then (yes)
+  :Iterate over files;
+  while ("More files in files[]?") is (yes)
+    :file = Get next file;
+    :versionFiles.add(file.getName());
+  endwhile
+else (no)
+  :files is null, no versions to add;
+endif
+
+:Print versionFiles;
+:return versionFiles;
+stop
+@enduml

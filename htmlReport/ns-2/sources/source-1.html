@@ -1,0 +1,382 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > FileController</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">com.fileprocessing.demo.Controller</a>
+</div>
+
+<h1>Coverage Summary for Class: FileController (com.fileprocessing.demo.Controller)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">FileController</td>
+<td class="coverageStat">
+  <span class="percent">
+    92.9%
+  </span>
+  <span class="absValue">
+    (13/14)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    84.6%
+  </span>
+  <span class="absValue">
+    (22/26)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    71.4%
+  </span>
+  <span class="absValue">
+    (65/91)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">FileController$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    93.3%
+  </span>
+  <span class="absValue">
+    (14/15)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    84.6%
+  </span>
+  <span class="absValue">
+    (22/26)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    71.7%
+  </span>
+  <span class="absValue">
+    (66/92)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package com.fileprocessing.demo.Controller;
+&nbsp;
+&nbsp;import com.fasterxml.jackson.core.type.TypeReference;
+&nbsp;import com.fasterxml.jackson.databind.ObjectMapper;
+&nbsp;import com.fasterxml.jackson.databind.SerializationFeature;
+&nbsp;import com.fileprocessing.demo.Service.FileManagerService;
+&nbsp;import org.springframework.beans.factory.annotation.Autowired;
+&nbsp;import org.springframework.http.HttpStatus;
+&nbsp;import org.springframework.http.ResponseEntity;
+&nbsp;import org.springframework.stereotype.Controller;
+&nbsp;import org.springframework.ui.Model;
+&nbsp;import org.springframework.web.bind.annotation.*;
+&nbsp;
+&nbsp;import java.io.File;
+&nbsp;import java.io.IOException;
+&nbsp;import java.net.URLDecoder;
+&nbsp;import java.nio.charset.StandardCharsets;
+&nbsp;import java.nio.file.Paths;
+&nbsp;import java.util.*;
+&nbsp;import java.util.regex.Pattern;
+&nbsp;
+&nbsp;@Controller
+&nbsp;@RequestMapping(&quot;/file&quot;)
+<b class="fc">&nbsp;public class FileController {</b>
+&nbsp;    @Autowired
+&nbsp;    private FileManagerService fileService;
+&nbsp;    @Autowired
+&nbsp;    private FileManagerService fileManagerService;
+&nbsp;
+&nbsp;    // Utility function for file extension validation
+&nbsp;    private boolean hasExtension(String filePath, String extension) {
+<b class="fc">&nbsp;        return filePath.toLowerCase().endsWith(&quot;.&quot; + extension);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @GetMapping(&quot;/&quot;)
+&nbsp;    public String getFileManagementPage() {
+<b class="nc">&nbsp;        return &quot;FileManagement&quot;; // Ensure this corresponds to file-management.html</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @GetMapping(&quot;/read-text&quot;)
+&nbsp;    public ResponseEntity&lt;String&gt; readTextFile(@RequestParam String filePath) {
+<b class="fc">&nbsp;        String content = fileManagerService.readTextFile(filePath);</b>
+<b class="fc">&nbsp;        return ResponseEntity.ok(content); // Send the text content directly</b>
+&nbsp;    }
+&nbsp;
+&nbsp;
+&nbsp;    @PostMapping(&quot;/write-text&quot;)
+&nbsp;    public String writeTextFile(@RequestParam String filePath, @RequestParam String content, Model model) {
+&nbsp;        try {
+<b class="fc">&nbsp;            if (!hasExtension(filePath, &quot;txt&quot;)) {</b>
+<b class="fc">&nbsp;                model.addAttribute(&quot;error&quot;, &quot;Only .txt files are allowed.&quot;);</b>
+<b class="fc">&nbsp;                return &quot;FileManagement&quot;;</b>
+&nbsp;            }
+<b class="fc">&nbsp;            fileManagerService.writeTextFile(filePath, content);</b>
+<b class="fc">&nbsp;            model.addAttribute(&quot;message&quot;, &quot;File written successfully.&quot;);</b>
+<b class="nc">&nbsp;        } catch (Exception e) {</b>
+<b class="nc">&nbsp;            model.addAttribute(&quot;error&quot;, &quot;Error writing to file: &quot;);</b>
+&nbsp;        }
+<b class="fc">&nbsp;        return &quot;FileManagement&quot;;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @GetMapping(&quot;/read-csv&quot;)
+&nbsp;    public String readCsvFile(@RequestParam String filePath, Model model) {
+&nbsp;        try {
+&nbsp;            // Use the service to read the CSV file
+&nbsp;
+<b class="fc">&nbsp;            List&lt;List&lt;String&gt;&gt; csvData = fileService.readCSV(filePath);</b>
+&nbsp;
+&nbsp;            // Pass the csvData to the model
+<b class="fc">&nbsp;            model.addAttribute(&quot;csvData&quot;, csvData);</b>
+<b class="fc">&nbsp;            System.out.println(&quot;CSV Data: &quot; + csvData);  // Debugging line</b>
+<b class="nc">&nbsp;        } catch (IOException e) {</b>
+<b class="nc">&nbsp;            model.addAttribute(&quot;error&quot;, &quot;Error reading CSV file: &quot; + e.getMessage()); // Handle errors</b>
+<b class="nc">&nbsp;            e.printStackTrace();  // Log the stack trace</b>
+&nbsp;        }
+<b class="fc">&nbsp;        return &quot;FileManagement&quot;; // Return the template name to display</b>
+&nbsp;    }
+&nbsp;
+&nbsp;
+&nbsp;    @PostMapping(&quot;/write-csv&quot;)
+&nbsp;    public String writeCsvFile(@RequestParam String filePath, @RequestParam String csvData, Model model) {
+&nbsp;        try {
+<b class="fc">&nbsp;            if (!hasExtension(filePath, &quot;csv&quot;)) {</b>
+<b class="fc">&nbsp;                model.addAttribute(&quot;error&quot;, &quot;Only .csv files are allowed.&quot;);</b>
+<b class="fc">&nbsp;                return &quot;FileManagement&quot;;</b>
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            List&lt;List&lt;String&gt;&gt; data = csvData.lines()</b>
+<b class="fc">&nbsp;                    .map(line -&gt; Arrays.asList(line.split(&quot;,&quot;)))</b>
+<b class="fc">&nbsp;                    .toList();</b>
+&nbsp;
+&nbsp;            // Call service method to write CSV and handle validation
+<b class="fc">&nbsp;            fileManagerService.writeCSV(filePath, data);</b>
+&nbsp;
+<b class="fc">&nbsp;            model.addAttribute(&quot;message&quot;, &quot;CSV file written successfully.&quot;);</b>
+<b class="fc">&nbsp;        } catch (IllegalArgumentException e) {</b>
+<b class="fc">&nbsp;            model.addAttribute(&quot;error&quot;, e.getMessage()); // Display validation error</b>
+<b class="nc">&nbsp;        } catch (Exception e) {</b>
+<b class="nc">&nbsp;            model.addAttribute(&quot;error&quot;, &quot;Error writing to CSV file: &quot; + e.getMessage());</b>
+&nbsp;        }
+<b class="fc">&nbsp;        return &quot;FileManagement&quot;;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;
+&nbsp;    @GetMapping(&quot;/read-json&quot;)
+&nbsp;    public ResponseEntity&lt;String&gt; readJsonFile(@RequestParam String filePath) {
+&nbsp;        try {
+<b class="fc">&nbsp;            if (!hasExtension(filePath, &quot;json&quot;)) {</b>
+<b class="fc">&nbsp;                return ResponseEntity.badRequest().body(&quot;Only .json files are allowed.&quot;);</b>
+&nbsp;            }
+<b class="fc">&nbsp;            List&lt;Map&lt;String, Object&gt;&gt; dataList = fileManagerService.readJsonFile(filePath);</b>
+&nbsp;            // Convert the list to JSON (you may already have a method for this)
+<b class="fc">&nbsp;            ObjectMapper mapper = new ObjectMapper();</b>
+<b class="fc">&nbsp;            String jsonResponse = mapper.writeValueAsString(dataList);</b>
+<b class="fc">&nbsp;            return ResponseEntity.ok(jsonResponse); // Send the content as JSON</b>
+<b class="nc">&nbsp;        } catch (Exception e) {</b>
+<b class="nc">&nbsp;            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)</b>
+<b class="nc">&nbsp;                    .body(&quot;Error reading JSON file: &quot; + e.getMessage());</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;
+&nbsp;    @PostMapping(&quot;/write-json&quot;)
+&nbsp;    public String writeJsonFile(@RequestParam String filePath, @RequestParam String jsonData, Model model) {
+&nbsp;        try {
+<b class="fc">&nbsp;            if (!hasExtension(filePath, &quot;json&quot;)) {</b>
+<b class="fc">&nbsp;                model.addAttribute(&quot;error&quot;, &quot;Only .json files are allowed.&quot;);</b>
+<b class="fc">&nbsp;                return &quot;FileManagement&quot;;</b>
+&nbsp;            }
+<b class="fc">&nbsp;            ObjectMapper objectMapper = new ObjectMapper();</b>
+<b class="fc">&nbsp;            List&lt;Map&lt;String, Object&gt;&gt; data = objectMapper.readValue(jsonData, new TypeReference&lt;&gt;() {});</b>
+<b class="fc">&nbsp;            fileManagerService.writeJsonFile(filePath, data);</b>
+<b class="fc">&nbsp;            model.addAttribute(&quot;message&quot;, &quot;JSON file written successfully.&quot;);</b>
+<b class="fc">&nbsp;        } catch (IOException e) {</b>
+<b class="fc">&nbsp;            model.addAttribute(&quot;error&quot;, &quot;Error writing to JSON file:&quot;);</b>
+&nbsp;        }
+<b class="fc">&nbsp;        return &quot;FileManagement&quot;;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @GetMapping(&quot;/versions&quot;)
+&nbsp;    @ResponseBody  // This will return the response as JSON
+&nbsp;    public ResponseEntity&lt;List&lt;String&gt;&gt; listVersions(@RequestParam String filePath) {
+&nbsp;        try {
+<b class="fc">&nbsp;            List&lt;String&gt; versions = fileManagerService.listVersions(filePath);</b>
+<b class="fc">&nbsp;            return ResponseEntity.ok(versions);  // Return the list as JSON response</b>
+<b class="nc">&nbsp;        } catch (Exception e) {</b>
+<b class="nc">&nbsp;            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)</b>
+<b class="nc">&nbsp;                    .body(Collections.singletonList(&quot;Error: &quot; + e.getMessage()));  // Return error message as JSON</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @GetMapping(&quot;/read-version/{version}&quot;)
+&nbsp;    public ResponseEntity&lt;String&gt; getVersionContent(
+&nbsp;            @PathVariable String version,
+&nbsp;            @RequestParam(&quot;fileType&quot;) String fileType) {
+&nbsp;        try {
+&nbsp;            // Logic to read the versioned file content based on version
+<b class="fc">&nbsp;            String content = fileManagerService.readVersionContent(version);</b>
+&nbsp;
+&nbsp;            // Depending on file type, return the appropriate content directly
+<b class="pc">&nbsp;            if (&quot;csv&quot;.equalsIgnoreCase(fileType)) {</b>
+<b class="nc">&nbsp;                return ResponseEntity.ok(content);  // CSV content as string</b>
+<b class="fc">&nbsp;            } else if (&quot;text&quot;.equalsIgnoreCase(fileType)) {</b>
+<b class="fc">&nbsp;                return ResponseEntity.ok(content);  // Text content</b>
+<b class="pc">&nbsp;            } else if (&quot;json&quot;.equalsIgnoreCase(fileType)) {</b>
+<b class="fc">&nbsp;                return ResponseEntity.ok(content);  // Raw JSON string</b>
+&nbsp;            } else {
+<b class="nc">&nbsp;                return ResponseEntity.status(HttpStatus.BAD_REQUEST)</b>
+<b class="nc">&nbsp;                        .body(&quot;Unsupported file type&quot;);</b>
+&nbsp;            }
+<b class="nc">&nbsp;        } catch (Exception e) {</b>
+<b class="nc">&nbsp;            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)</b>
+<b class="nc">&nbsp;                    .body(&quot;Error reading version content: &quot; + e.getMessage());</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;    // Download version of the file
+&nbsp;    @GetMapping(&quot;/download-version&quot;)
+&nbsp;    public ResponseEntity&lt;byte[]&gt; downloadVersion(
+&nbsp;            @RequestParam String fileName,
+&nbsp;            @RequestParam String version,
+&nbsp;            @RequestParam String fileType) {
+&nbsp;        try {
+&nbsp;            // Download the file content using the version identifier
+<b class="fc">&nbsp;            byte[] fileContent = fileService.downloadFileVersion(version);</b>
+&nbsp;
+&nbsp;            // Set content type based on the file type
+<b class="fc">&nbsp;            String contentType = fileType.equals(&quot;json&quot;) ? &quot;application/json&quot; : &quot;text/plain&quot;;</b>
+<b class="fc">&nbsp;            return ResponseEntity.ok()</b>
+<b class="fc">&nbsp;                    .header(&quot;Content-Type&quot;, contentType)</b>
+<b class="fc">&nbsp;                    .header(&quot;Content-Disposition&quot;, &quot;attachment; filename=\&quot;&quot; + version + &quot;\&quot;&quot;)</b>
+<b class="fc">&nbsp;                    .body(fileContent);</b>
+<b class="nc">&nbsp;        } catch (IOException e) {</b>
+<b class="nc">&nbsp;            return ResponseEntity.status(500).body(null);  // Handle the error appropriately</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;
+&nbsp;    // Delete version of the file
+&nbsp;    @DeleteMapping(&quot;/delete-version&quot;)
+&nbsp;    public ResponseEntity&lt;String&gt; deleteVersion(
+&nbsp;            @RequestParam String version) {
+&nbsp;        try {
+<b class="fc">&nbsp;            boolean deleted = fileService.deleteFileVersion(version);</b>
+<b class="pc">&nbsp;            if (deleted) {</b>
+<b class="fc">&nbsp;                return ResponseEntity.ok(&quot;Version deleted successfully.&quot;);</b>
+&nbsp;            } else {
+<b class="nc">&nbsp;                return ResponseEntity.status(404).body(&quot;Version not found.&quot;);</b>
+&nbsp;            }
+<b class="nc">&nbsp;        } catch (IOException e) {</b>
+<b class="nc">&nbsp;            return ResponseEntity.status(500).body(&quot;Error deleting version.&quot;);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @PostMapping(&quot;/rename&quot;)
+&nbsp;    public ResponseEntity&lt;String&gt; renameFile(@RequestParam String filePath, @RequestParam String newFileName) {
+&nbsp;        // Call the service method and get the result
+<b class="fc">&nbsp;        String result = fileService.renameFile(filePath, newFileName);</b>
+&nbsp;
+<b class="fc">&nbsp;        System.out.println(result);</b>
+&nbsp;        // Based on the result, return appropriate response
+<b class="fc">&nbsp;        if (result.contains(&quot;not found&quot;) || result.contains(&quot;Invalid&quot;) || result.contains(&quot;exists&quot;)) {</b>
+<b class="fc">&nbsp;            System.out.println(&quot;Hi&quot;);</b>
+<b class="fc">&nbsp;            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(result);</b>
+<b class="pc">&nbsp;        } else if (result.contains(&quot;Failed&quot;)) {</b>
+<b class="nc">&nbsp;            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(result);</b>
+&nbsp;        } else {
+<b class="fc">&nbsp;            return ResponseEntity.ok(result);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+&nbsp;
+&nbsp;
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-11-25 10:52</div>
+</div>
+</body>
+</html>

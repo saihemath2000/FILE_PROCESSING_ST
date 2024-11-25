@@ -1,9 +1,0 @@
-@startuml
-start
-:Input filePath and content;
-:Open file in append mode;
-:Write content to file;
-:Add newline after content;
-:Close file;
-stop
-@enduml

@@ -247,7 +247,7 @@
     <h2>Text File Content</h2>
     <pre id="textContent" th:text="${content}"></pre>
 
-    <h3 style="text-align: center">JSON Data</h3>
+    <h2 style="text-align: center">JSON Data</h2>
     <pre id="jsonContent" th:text="${dataList}"></pre>
 
     <div th:if="${csvData != null and !csvData.isEmpty()}">
@@ -270,18 +270,8 @@
         </div>
     </div>
 
-<!--    <div th:if="${dataList != null}">-->
-<!--        <h3 style="text-align: center">JSON Data</h3>-->
-<!--        <pre id="jsonContent" th:text="${dataList}"></pre>-->
-<!--    </div>-->
-
-<!--    <div th:if="${content != null}">-->
-<!--        <h2>Text File Content</h2>-->
-<!--        <pre id="textContent" th:text="${content}"></pre>-->
-<!--    </div>-->
-
     <!-- Error or Content Display -->
-    <div th:if="${error}" class="error" style="display: none;">
+    <div th:if="${error}" class="error">
         <p th:text="${error}"></p>
     </div>
 
@@ -325,7 +315,7 @@
     <!-- Write CSV File -->
     <div class="form-section">
         <h3>Write CSV File</h3>
-        <form th:action="@{/file/write-csv}" method="post" onsubmit="return validateCSVFile()">
+        <form th:action="@{/file/write-csv}" method="post">
             <label for="csvWriteFilePath">Enter CSV file path:</label>
             <input type="text" id="csvWriteFilePath" name="filePath" placeholder="e.g., /path/to/file.csv" required />
             <textarea name="csvData" rows="6" placeholder="Enter CSV data (one row per line, comma-separated)"></textarea>
@@ -353,6 +343,27 @@
             <button type="submit">Write to JSON</button>
         </form>
     </div>
+    <!-- Rename File -->
+    <div class="form-section">
+        <h3>Rename File</h3>
+        <form id="renameFileForm" method="post" onsubmit="return renameFile(event)">
+            <label for="renameFilePath">Enter current file path:</label>
+            <input type="text" id="renameFilePath" name="filePath" placeholder="e.g., /path/to/file.txt" required />
+
+            <label for="newFileName">Enter new file name:</label>
+            <input type="text" id="newFileName" name="newFileName" placeholder="e.g., newfile.txt" required />
+
+            <button type="submit">Rename File</button>
+        </form>
+        <div id="renameError" class="error" style="display: none;">
+            <p>File rename failed. Please try again.</p>
+        </div>
+        <div id="renameSuccess" class="success" style="display: none;">
+            <p>File renamed successfully!</p>
+        </div>
+    </div>
+
+
     <div id="versionModal" class="modal">
         <div class="modal-content">
             <span class="close" onclick="closeModal()">&times;</span>
@@ -362,6 +373,51 @@
     </div>
 </div>
 <script>
+    function renameFile(event) {
+        event.preventDefault();
+
+        const filePath = document.getElementById('renameFilePath').value;
+        const newFileName = document.getElementById('newFileName').value;
+
+        // Make sure both fields are filled
+        if (!filePath || !newFileName) {
+            document.getElementById('renameError').style.display = 'block';
+            document.getElementById('renameError').innerHTML = '<p>Both fields are required.</p>';
+            return;
+        }
+
+        // Construct the request URL to rename the file and its versions
+        const url = `/file/rename?filePath=${encodeURIComponent(filePath)}&newFileName=${encodeURIComponent(newFileName)}`;
+
+        // Send the rename request
+        fetch(url, {
+            method: 'POST'
+        })
+            .then(response => {
+                if (response.ok) {
+                    document.getElementById('renameSuccess').style.display = 'block';
+                    document.getElementById('renameError').style.display = 'none';
+                    resetRenameForm();  // Reset form after success
+                } else {
+                    return response.text().then(errorMessage => {
+                        // Show specific error message from backend
+                        document.getElementById('renameError').style.display = 'block';
+                        document.getElementById('renameSuccess').style.display = 'none';
+                        document.getElementById('renameError').innerHTML = `<p>${errorMessage}</p>`;
+                        throw new Error(errorMessage);
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error renaming file:', error);
+            });
+    }
+
+
+    function resetRenameForm() {
+        document.getElementById('renameFileForm').reset();
+    }
+
     function validateCSVFile() {
         const filePath = document.getElementById('csvfilePath').value;
         const fileExtension = filePath.split('.').pop().toLowerCase();
@@ -464,8 +520,6 @@
             .catch(error => console.error('Error fetching versions:', error));
     }
 
-
-
     function fetchFileContent(fileName, fileType) {
         console.log("Fetching current file content...");
 
@@ -494,9 +548,6 @@
                 console.error('Error fetching or processing file content:', error);
             });
     }
-
-
-
     function displayFileContent(content, fileType) {
         let contentArea;
 
@@ -533,8 +584,6 @@
 
         closeModal();  // Close modal after displaying content
     }
-
-
     function downloadVersion(fileName, version, fileType) {
         const url = `/file/download-version?fileName=${encodeURIComponent(fileName)}&version=${encodeURIComponent(version)}&fileType=${fileType}`;
         fetch(url)
@@ -565,9 +614,6 @@
     function closeModal() {
         document.getElementById('versionModal').style.display = 'none';
     }
-
-
-
     function fetchVersionContent(fileName, version, fileType) {
         console.log("Fetching version content...");
         console.log("File Name:", fileName);

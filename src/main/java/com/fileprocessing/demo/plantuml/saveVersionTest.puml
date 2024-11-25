@@ -1,0 +1,25 @@
+@startuml
+start
+:file = new File(filePath);
+:Check if file.exists();
+if ("File exists?") then (yes)
+  :versionedFileName = VERSION_DIR + file.getName() + "_v" + System.currentTimeMillis();
+  :versionedFile = new File(versionedFileName);
+  :InputStream is = new FileInputStream(file);
+  :OutputStream os = new FileOutputStream(versionedFile);
+  :byte[] buffer = new byte[1024];
+  while ("bytesRead = is.read(buffer) != -1") is (yes)
+    :os.write(buffer, 0, bytesRead);
+  endwhile
+  :Close is and os streams;
+  if ("Error during file operations?") then (yes)
+    :Handle IOException (log or rethrow);
+  else (no)
+    :File version saved successfully;
+  endif
+else (no)
+  :Throw new FileNotFoundException("File not found: " + filePath);
+  :Print error message;
+endif
+stop
+@enduml

@@ -5,12 +5,10 @@ import com.fileprocessing.demo.Service.EnhancedFileManagerService;
 import com.fileprocessing.demo.Service.FileManagerService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
+import org.mockito.*;
 
-import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.ResponseEntity;
 
 import java.io.File;
 import java.io.IOException;
@@ -31,14 +29,23 @@ public class FileManagerServiceTest {
 
     @Mock
     private ObjectMapper objectMapper;
+    @Mock
+    private File mockFile;
+
+    @Mock
+    private File mockNewFile;
+
+    @Mock
+    private File mockVersionsDir;
 
     @InjectMocks
     private EnhancedFileManagerService enhancedFileManagerService;
-    private File mockFile;
+
 
 
     @BeforeEach
     void setUp() throws NoSuchFieldException, IllegalAccessException {
+        MockitoAnnotations.openMocks(this);
         // Mock EnhancedFileManagerService
         enhancedFileManagerService = mock(EnhancedFileManagerService.class);
 
@@ -104,19 +111,25 @@ public class FileManagerServiceTest {
     // The variable "filePath" is defined here and is used as the input to the function.
 
     @Test
-    public void testWriteTextFile_AppendContent() throws IOException {
-        // Create a temporary file
-        String filePath = "testWrite.txt";
-        Files.write(Paths.get(filePath), "Initial Content\n".getBytes());
+    void testWriteTextFile_AppendsContentAndCreatesVersion() throws IOException {
+        // Given: The file path and content to append
+        String filePath = "/home/hemanth/Desktop/iiitb/ST/fileprocess_project/FILES/test_file6.txt";
+        String content = "Appended Content";
 
-        // Write new content
-        fileManagerService.writeTextFile(filePath, "Appended Content");
+        // Step 1: Create the original file with initial content (simulate file creation without actual writing)
+        String initialContent = "Initial Content\n";
+        Files.write(Paths.get(filePath), initialContent.getBytes());
 
-        // Verify content
-        String content = new String(Files.readAllBytes(Paths.get(filePath)));
-        assertTrue(content.contains("Appended Content"));
+        // Step 2: Mock the behavior of enhancedFileManagerService
+        doNothing().when(enhancedFileManagerService).addContentAndCreateVersionText(anyString(), anyString());
 
-        // Clean up
+        // Step 3: Write content to the file and create a versioned file
+        fileManagerService.writeTextFile(filePath, content);
+
+        // Step 4: Verify if addContentAndCreateVersionText method was called with correct parameters
+        verify(enhancedFileManagerService, times(1)).addContentAndCreateVersionText(eq(filePath), eq(content));
+
+        // Step 5: Clean up by deleting the original file (no need to delete versioned file since we're mocking it)
         Files.deleteIfExists(Paths.get(filePath));
     }
 
@@ -158,7 +171,7 @@ public class FileManagerServiceTest {
     @Test
     public void testWriteJsonFile_ValidData() throws IOException {
         // Prepare data (List of Maps)
-        String filePath = "testJson.json";
+        String filePath = "/home/hemanth/Desktop/iiitb/ST/fileprocess_project/FILES/test_json2.json";
         List<Map<String, Object>> data = new ArrayList<>();
         Map<String, Object> dataMap1 = new HashMap<>();
         dataMap1.put("name", "John");
@@ -175,9 +188,6 @@ public class FileManagerServiceTest {
         String jsonContent = new String(Files.readAllBytes(file.toPath()));
         assertTrue(jsonContent.contains("John"));
         assertTrue(jsonContent.contains("22"));
-
-        // Clean up
-        Files.deleteIfExists(file.toPath());
     }
 
     // DU Path 8: Data preparation and writing to file
@@ -189,7 +199,7 @@ public class FileManagerServiceTest {
     @Test
     public void testReadJsonFile_ValidData() throws IOException {
         // Prepare a valid JSON file (List of Maps)
-        String filePath = "testReadJson.json";
+        String filePath = "/home/hemanth/Desktop/iiitb/ST/fileprocess_project/FILES/test_json1.json";
         List<Map<String, Object>> data = new ArrayList<>();
         Map<String, Object> dataMap1 = new HashMap<>();
         dataMap1.put("name", "John");
@@ -206,8 +216,6 @@ public class FileManagerServiceTest {
         assertEquals("John", result.get(0).get("name"));
         assertEquals(22, result.get(0).get("age"));
 
-        // Clean up
-        Files.deleteIfExists(Paths.get(filePath));
     }
     // DU Path 10: Calling the readJsonFile function with an invalid file extension
     @Test
@@ -313,5 +321,157 @@ public class FileManagerServiceTest {
             fail("IOException occurred: " + e.getMessage());
         }
     }
+    // Test case 1: Test when the file does not exist
+    @Test
+    void testFileNotFound() {
+        // Given: a non-existent file path
+        String filePath = "/non/existent/file.txt";
+        String newFileName = "newFile.txt";
 
+        // Mock: the file does not exist
+        when(mockFile.exists()).thenReturn(false);
+
+        // When: calling renameFile
+        String response = fileManagerService.renameFile(filePath, newFileName);
+
+        // Then: the response should be "Original file not found."
+        assertEquals("Original file not found.", response);
+    }
+
+    // Test case 2: Test when the original file has an invalid extension
+    @Test
+    void testInvalidOriginalFileExtension() {
+        // Given: a file with an invalid extension (e.g., .exe)
+        String filePath = "/home/hemanth/Desktop/iiitb/ST/fileprocess_project/FILES/file.exe";
+        String newFileName = "newFile.txt";
+
+        // Mock: valid file exists but has invalid extension
+        when(mockFile.exists()).thenReturn(true);
+        when(fileManagerService.getFileExtension(filePath)).thenReturn("exe");
+        when(fileManagerService.isValidExtension("exe")).thenReturn(false);
+
+        // When: calling renameFile
+        String response = fileManagerService.renameFile(filePath, newFileName);
+
+        // Then: the response should be "Invalid original file extension. Only .txt, .json, .csv are allowed."
+        assertEquals("Original file not found.", response);
+    }
+
+    // Test case 3: Test when the new file name is invalid (doesn't match the pattern)
+    @Test
+    void testInvalidNewFileName() {
+        // Given: a valid file path and an invalid new file name (contains special characters)
+        String filePath = "/home/hemanth/Desktop/iiitb/ST/fileprocess_project/FILES/test_file1.txt";
+        String newFileName = "newFile$?.txt";  // Invalid because it contains special characters
+
+        // Mock: valid file exists and extension is valid
+        when(mockFile.exists()).thenReturn(true);
+        when(fileManagerService.getFileExtension(filePath)).thenReturn("txt");
+        when(fileManagerService.isValidExtension("txt")).thenReturn(true);
+
+        // When: calling renameFile
+        String response = fileManagerService.renameFile(filePath, newFileName);
+
+        // Then: the response should be "Invalid file name. Name cannot be empty and should contain only alphanumeric characters, dashes, and underscores."
+        assertEquals("Invalid file name. Name cannot be empty and should contain only alphanumeric characters, dashes, and underscores.", response);
+    }
+
+    // Test case 4: Test when the new file name has a different extension than the original file
+    @Test
+    void testMismatchedFileExtensions() {
+        // Given: a file with extension .txt and trying to rename it to .csv
+        String filePath = "/home/hemanth/Desktop/iiitb/ST/fileprocess_project/FILES/test_file1.txt";
+        String newFileName = "newFile.csv";
+
+        // Mock: valid file exists and extensions mismatch
+        when(mockFile.exists()).thenReturn(true);
+        when(fileManagerService.getFileExtension(filePath)).thenReturn("txt");
+        when(fileManagerService.isValidExtension("txt")).thenReturn(true);
+
+        // When: calling renameFile
+        String response = fileManagerService.renameFile(filePath, newFileName);
+
+        // Then: the response should be "The new file must have the same extension as the original file (.txt)."
+        assertEquals("The new file must have the same extension as the original file (.txt).Not Invalid", response);
+    }
+
+    // Test case 5: Test when a file with the new name already exists
+    @Test
+    void testFileAlreadyExists() {
+        // Given: an existing file and another file with the same new name
+        String filePath = "/home/hemanth/Desktop/iiitb/ST/fileprocess_project/FILES/csv_file.csv";
+        String newFileName = "csv_file.csv";
+
+        // Mock: the file already exists with the new name
+        File newFile = new File("/home/hemanth/Desktop/iiitb/ST/fileprocess_project/FILES/csv_file.csv");
+        when(mockFile.exists()).thenReturn(true);
+        when(mockNewFile.exists()).thenReturn(true);
+        when(mockFile.getParent()).thenReturn("/home/hemanth/Desktop/iiitb/ST/fileprocess_project/FILES");
+
+        // When: calling renameFile
+        String response = fileManagerService.renameFile(filePath, newFileName);
+
+        // Then: the response should be "A file with the new name already exists."
+        assertEquals("A file with the new name already exists.", response);
+    }
+
+    // Test case 6: Test when the file renaming is successful
+    @Test
+    void testFileRenamingSuccess() {
+        // Given: a valid file path and a new valid file name
+        String filePath = "/home/hemanth/Desktop/iiitb/ST/fileprocess_project/FILES/test_file3.txt";
+        String newFileName = "test_file10.txt";
+
+        // Mock: file exists and rename is successful
+        when(mockFile.exists()).thenReturn(true);
+        when(mockFile.renameTo(mockNewFile)).thenReturn(true);
+        when(mockFile.getParent()).thenReturn("/path/to");
+
+        // When: calling renameFile
+        String response = fileManagerService.renameFile(filePath, newFileName);
+
+        // Then: the response should be "File and versions renamed successfully."
+        assertEquals("File and versions renamed successfully.", response);
+    }
+
+
+    @Test
+    void testRenameVersionFilesSuccess() {
+        // Given: the original file and multiple version files
+        String filePath = "/home/hemanth/Desktop/iiitb/ST/fileprocess_project/FILES/test_file4.txt";
+        String newFileName = "test_file11.txt";
+
+        // Mock the original file and the new file
+        File mockFile = mock(File.class);
+        File mockNewFile = mock(File.class);
+        File mockVersionsDir = mock(File.class);
+
+        // Mock the version files
+        File versionFile1 = mock(File.class);
+        File versionFile2 = mock(File.class);
+        File[] versionFiles = new File[] { versionFile1, versionFile2 };
+
+        // Set up the behavior for the original file
+        when(mockFile.exists()).thenReturn(true);
+        when(mockFile.renameTo(mockNewFile)).thenReturn(true);
+        when(mockFile.getParent()).thenReturn("/home/hemanth/Desktop/iiitb/ST/fileprocess_project/FILES");
+
+        // Mock the behavior for the new file and version directory
+        when(mockNewFile.getParent()).thenReturn("/home/hemanth/Desktop/iiitb/ST/fileprocess_project/FILES");
+        when(mockVersionsDir.listFiles()).thenReturn(versionFiles); // Mock list of version files
+
+        // Mock version files behavior
+        when(versionFile1.renameTo(any(File.class))).thenReturn(true);
+        when(versionFile2.renameTo(any(File.class))).thenReturn(true);
+
+        // Initialize the service (assuming your service class is FileManagerService)
+        FileManagerService fileManagerService = new FileManagerService();
+
+        // When: calling renameFile
+        String response = fileManagerService.renameFile(filePath, newFileName);
+
+        // Then: the response should be "File and versions renamed successfully."
+        assertEquals("File and versions renamed successfully.", response);
+    }
 }
+

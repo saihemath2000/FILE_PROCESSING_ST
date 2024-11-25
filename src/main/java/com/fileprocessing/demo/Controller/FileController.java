@@ -1,8 +1,6 @@
 package com.fileprocessing.demo.Controller;
-
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fileprocessing.demo.Service.FileManagerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -10,16 +8,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-
 import java.io.IOException;
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 @Controller
 @RequestMapping("/file")
 public class FileController {
-
     @Autowired
     private FileManagerService fileService;
     @Autowired
@@ -52,7 +46,7 @@ public class FileController {
             fileManagerService.writeTextFile(filePath, content);
             model.addAttribute("message", "File written successfully.");
         } catch (Exception e) {
-            model.addAttribute("error", "Error writing to file: " + e.getMessage());
+            model.addAttribute("error", "Error writing to file: ");
         }
         return "FileManagement";
     }
@@ -82,16 +76,23 @@ public class FileController {
                 model.addAttribute("error", "Only .csv files are allowed.");
                 return "FileManagement";
             }
+
             List<List<String>> data = csvData.lines()
                     .map(line -> Arrays.asList(line.split(",")))
                     .toList();
+
+            // Call service method to write CSV and handle validation
             fileManagerService.writeCSV(filePath, data);
+
             model.addAttribute("message", "CSV file written successfully.");
+        } catch (IllegalArgumentException e) {
+            model.addAttribute("error", e.getMessage()); // Display validation error
         } catch (Exception e) {
             model.addAttribute("error", "Error writing to CSV file: " + e.getMessage());
         }
         return "FileManagement";
     }
+
 
     @GetMapping("/read-json")
     public ResponseEntity<String> readJsonFile(@RequestParam String filePath) {
@@ -123,7 +124,7 @@ public class FileController {
             fileManagerService.writeJsonFile(filePath, data);
             model.addAttribute("message", "JSON file written successfully.");
         } catch (IOException e) {
-            model.addAttribute("error", "Error writing to JSON file: " + e.getMessage());
+            model.addAttribute("error", "Error writing to JSON file:");
         }
         return "FileManagement";
     }
@@ -201,4 +202,23 @@ public class FileController {
             return ResponseEntity.status(500).body("Error deleting version.");
         }
     }
+
+    @PostMapping("/rename")
+    public ResponseEntity<String> renameFile(@RequestParam String filePath, @RequestParam String newFileName) {
+        // Call the service method and get the result
+        String result = fileService.renameFile(filePath, newFileName);
+
+        System.out.println(result);
+        // Based on the result, return appropriate response
+        if (result.contains("not found") || result.contains("Invalid") || result.contains("exists")) {
+            System.out.println("Hi");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(result);
+        } else if (result.contains("Failed")) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(result);
+        } else {
+            return ResponseEntity.ok(result);
+        }
+    }
 }
+
+

@@ -1,0 +1,49 @@
+@startuml
+start
+:originalFile = new File(filePath);
+if (!originalFile.exists()) then (no)
+  :Return "Original file not found.";
+else (yes)
+  :originalExtension = getFileExtension(filePath);
+  if (!isValidExtension(originalExtension)) then (no)
+    :Return "Invalid original file extension.";
+  else (yes)
+    if (newFileName == null || newFileName.trim().isEmpty() || !newFileName.matches(FILE_NAME_PATTERN)) then (no)
+      :Return "Invalid file name.";
+    else (yes)
+      :newExtension = getFileExtension(newFileName);
+      if (newExtension == null || !newExtension.equals(originalExtension)) then (no)
+        :Return "The new file must have the same extension as original.";
+      else (yes)
+        :newFile = new File(originalFile.getParent(), newFileName);
+        if (newFile.exists()) then (yes)
+          :Return "A file with the new name already exists.";
+        else (no)
+          :isRenamed = originalFile.renameTo(newFile);
+          if (!isRenamed) then (no)
+            :Return "Failed to rename the original file.";
+          else (yes)
+            :versionsDir = new File("versions/");
+            :fileName = extractFileNameFromPath(filePath);
+            :regex = "^" + Pattern.quote(fileName) + "_v[0-9]+$";
+            :files = versionsDir.listFiles((dir, name) -> name.matches(regex));
+            if (files != null) then (yes)
+              while ("More version files to process?") is (yes)
+                :versionFile = Get next version file;
+                :newVersionFileName = versionFile.getName().replace(originalFile.getName(), newFileName);
+                :newVersionFile = new File(versionsDir, newVersionFileName);
+                :versionRenamed = versionFile.renameTo(newVersionFile);
+                if (!versionRenamed) then (no)
+                  :Return "Failed to rename version file.";
+                endif
+              endwhile
+            endif
+            :Return "File and versions renamed successfully.";
+          endif
+        endif
+      endif
+    endif
+  endif
+endif
+stop
+@enduml

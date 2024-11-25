@@ -1,16 +1,19 @@
 package com.fileprocessing.demo.Service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Service;
 
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 @Service
 public class EnhancedFileManagerService {
 
     private static final String VERSION_DIR = "versions/";
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     public EnhancedFileManagerService() {
         // Create the versions directory if it doesn't exist
@@ -19,9 +22,7 @@ public class EnhancedFileManagerService {
             versionDir.mkdir();
         }
     }
-
-    // Save a version of the file
-    public void saveFileVersion(String filePath) throws IOException {
+    public void addContentAndCreateVersionText(String filePath, String content) throws IOException {
         File file = new File(filePath);
         if (!file.exists()) {
             throw new FileNotFoundException("File not found: " + filePath);
@@ -39,6 +40,24 @@ public class EnhancedFileManagerService {
                 os.write(buffer, 0, bytesRead);
             }
         }
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(versionedFile, true))) {
+            writer.write(content);  // Write the new content to the versioned file
+            writer.newLine();       // Add a newline after the content
+        }
+    }
+
+
+    // Save a version of the file
+    public void saveFileVersionJson(String filePath, List<Map<String, Object>> dataList) throws IOException {
+        File file = new File(filePath);
+        if (!file.exists()) {
+            throw new FileNotFoundException("File not found: " + filePath);
+        }
+
+        // Create a version file with a unique name
+        String versionedFileName = VERSION_DIR + file.getName() + "_v" + System.currentTimeMillis();
+        File versionedFile = new File(versionedFileName);
+        objectMapper.writerWithDefaultPrettyPrinter().writeValue(versionedFile, dataList);
     }
 
     public List<String> listFileVersions(String originalFileName) {
